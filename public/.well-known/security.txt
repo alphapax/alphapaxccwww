@@ -1,0 +1,4 @@
+Contact: mailto:security@alphapax.cc
+Expires: 2027-11-15T00:00:00Z
+Preferred-Languages: en, fr
+Canonical: https://alphapax.cc/.well-known/security.txt
