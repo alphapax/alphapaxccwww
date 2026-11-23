@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ALPHAPAX // COMMAND CENTER</title>
+<meta name="description" content="alphapax.cc — command center.">
+<meta name="theme-color" content="#07080a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%2307080a'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='monospace' font-size='44' font-weight='700' fill='%23ff8a1f'%3E%CE%B1%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#07080a;
+    --sodium:#ff8a1f;   /* the one neon accent */
+    --cold:#8fd8e0;     /* faint cold secondary */
+    --text:#d9d3c5;
+    --dim:#6e695f;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;background:var(--bg);overflow:hidden;color:var(--text);
+    font-family:"JetBrains Mono","IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    -webkit-font-smoothing:antialiased}
+
+  /* Your image: put a file named bg.jpg next to this page. */
+  #bg{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;object-position: 0% 90%;
+    filter:grayscale(.4) contrast(1.15) brightness(.55) sepia(.15)}
+  canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
+  body.hasimg #city{display:none}
+
+  .shade{position:fixed;inset:0;pointer-events:none;background:
+    linear-gradient(to top,rgba(7,8,10,.96) 0%,rgba(7,8,10,.4) 42%,rgba(7,8,10,.15) 65%,rgba(7,8,10,.7) 100%),
+    radial-gradient(ellipse at 50% 55%,transparent 35%,rgba(0,0,0,.85) 100%)}
+  .scan{position:fixed;inset:0;pointer-events:none;
+    background:repeating-linear-gradient(to bottom,rgba(255,255,255,.035) 0 1px,transparent 1px 3px);
+    animation:flicker 7s infinite steps(1)}
+  @keyframes flicker{0%,100%{opacity:1}46%{opacity:.75}47%{opacity:1}81%{opacity:.85}82%{opacity:1}}
+
+  /* top status bar */
+  .bar{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;gap:1rem;
+    padding:1.1rem 6vw;font-size:.68rem;letter-spacing:.28em;color:var(--dim);text-transform:uppercase}
+  .bar b{color:var(--sodium);font-weight:400}
+  .dot{display:inline-block;width:.5em;height:.5em;border-radius:50%;background:var(--sodium);
+    margin-right:.7em;vertical-align:.05em;box-shadow:0 0 8px var(--sodium);animation:pulse 2.4s infinite}
+  @keyframes pulse{50%{opacity:.25}}
+
+  main{position:fixed;left:6vw;right:6vw;bottom:13vh}
+  .tag{font-size:.72rem;letter-spacing:.4em;color:var(--dim);margin-bottom:1.1rem;text-transform:uppercase}
+  h1{position:relative;display:inline-block;font-size:clamp(2.8rem,10vw,8rem);font-weight:700;
+    letter-spacing:.06em;line-height:.95;color:var(--text);text-shadow:0 0 30px rgba(255,138,31,.18)}
+  h1 .tld{color:var(--sodium);text-shadow:0 0 18px rgba(255,138,31,.55)}
+  h1::before,h1::after{content:attr(data-text);position:absolute;inset:0;opacity:0;pointer-events:none}
+  h1.glitch::before{opacity:.8;color:var(--sodium);transform:translate(-3px,1px);clip-path:inset(18% 0 52% 0)}
+  h1.glitch::after{opacity:.7;color:var(--cold);transform:translate(3px,-1px);clip-path:inset(62% 0 8% 0)}
+  h1.glitch{transform:skewX(-2deg)}
+
+  .line{margin-top:1.6rem;font-size:clamp(.85rem,1.6vw,1.05rem);letter-spacing:.14em;color:var(--text);
+    min-height:1.6em;text-transform:uppercase}
+  .line .p{color:var(--sodium);margin-right:.8em}
+  .cur{display:inline-block;width:.6em;height:1.05em;background:var(--sodium);vertical-align:-.15em;
+    margin-left:.15em;animation:blink 1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+
+  .foot{position:fixed;right:6vw;bottom:4vh;font-size:.62rem;letter-spacing:.3em;color:var(--dim);
+    text-transform:uppercase;text-align:right}
+
+  @media (max-width:640px){
+    .bar{flex-direction:column;gap:.35rem}
+    .bar .r{display:none}
+    main{bottom:16vh}
+    .foot{left:6vw;text-align:left}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .scan,.dot,.cur{animation:none}
+  }
+</style>
+</head>
+<body>
+  <img id="bg" src="bg.jpg" alt="">
+  <canvas id="city" aria-hidden="true"></canvas>
+  <canvas id="rain" aria-hidden="true"></canvas>
+  <div class="shade"></div>
+  <div class="scan"></div>
+
+  <header class="bar">
+    <div><span class="dot"></span>Minipax // Node <b>CC-01</b></div>
+    <div class="r">12°11′S 96°50′E &nbsp;·&nbsp; <span id="clock">--</span></div>
+  </header>
+
+  <main>
+    <div class="tag">// Command center</div>
+    <h1 id="title" data-text="ALPHAPAX.CC">ALPHAPAX<span class="tld">.CC</span></h1>
+    <p class="line" aria-live="off"><span class="p">&gt;</span><span id="type"></span><span class="cur"></span></p>
+  </main>
+
+  <div class="foot">All transmissions are logged</div>
+
+<script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- background image detection ---------- */
+  const img = document.getElementById('bg');
+  const useImg = () => document.body.classList.add('hasimg');
+  if (img.complete && img.naturalWidth) useImg();
+  img.addEventListener('load', useImg);
+  img.addEventListener('error', () => img.remove());
+
+  /* ---------- procedural noir skyline (fallback when no bg.jpg) ---------- */
+  const city = document.getElementById('city');
+  function rng(seed){ return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+  function drawCity(){
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    const w = innerWidth, h = innerHeight;
+    city.width = w * dpr; city.height = h * dpr;
+    const c = city.getContext('2d'); c.setTransform(dpr,0,0,dpr,0,0);
+    const r = rng(1984);
+
+    // sky
+    const sky = c.createLinearGradient(0,0,0,h);
+    sky.addColorStop(0,'#05060a'); sky.addColorStop(.55,'#0d0e12'); sky.addColorStop(.8,'#1c130c'); sky.addColorStop(1,'#07080a');
+    c.fillStyle = sky; c.fillRect(0,0,w,h);
+
+    // sodium haze on the horizon
+    const haze = c.createRadialGradient(w*.62,h*.78,0,w*.62,h*.78,w*.7);
+    haze.addColorStop(0,'rgba(255,138,31,.22)'); haze.addColorStop(1,'rgba(255,138,31,0)');
+    c.fillStyle = haze; c.fillRect(0,0,w,h);
+
+    const layers = [
+      {fill:'#11131a', min:.28, max:.55, wmin:30, wmax:80, lit:.07, a:.35},
+      {fill:'#0b0d12', min:.18, max:.62, wmin:40, wmax:110, lit:.10, a:.6},
+      {fill:'#050608', min:.08, max:.38, wmin:60, wmax:160, lit:.05, a:.9},
+    ];
+    layers.forEach((L, li) => {
+      let x = -20;
+      while (x < w + 20){
+        const bw = L.wmin + r()*(L.wmax-L.wmin);
+        const bh = h*(L.min + r()*(L.max-L.min));
+        const top = h - bh;
+        c.fillStyle = L.fill; c.fillRect(x, top, bw, bh);
+        // rooftop details
+        if (r() < .3){ c.fillRect(x+bw*.3, top-14-r()*30, 2, 44); }
+        if (r() < .15){ c.fillRect(x+bw*.15, top-10, bw*.4, 10); }
+        if (li === 1 && r() < .12){ // blinking-red-light style beacon (static here)
+          c.fillStyle='rgba(255,60,40,.8)'; c.fillRect(x+bw*.3-1, top-46, 4, 3);
+        }
+        // windows
+        const cw = 4, chh = 6, gx = 5, gy = 8;
+        for (let wy = top + 10; wy < h - 10; wy += gy){
+          for (let wx = x + 6; wx < x + bw - 6; wx += gx){
+            if (r() < L.lit){
+              const cold = r() < .12;
+              c.fillStyle = cold ? `rgba(143,216,224,${L.a*.6*r()+.1})` : `rgba(255,${120+r()*60|0},40,${L.a*r()+.08})`;
+              c.fillRect(wx, wy, cw-1, chh-2);
+            }
+          }
+        }
+        x += bw + (r() < .3 ? r()*14 : 0);
+      }
+      // fog between layers
+      const fog = c.createLinearGradient(0,h*.55,0,h);
+      fog.addColorStop(0,'rgba(20,18,16,0)'); fog.addColorStop(1,'rgba(20,18,16,.35)');
+      c.fillStyle = fog; c.fillRect(0,0,w,h);
+    });
+  }
+
+  /* ---------- rain ---------- */
+  const rain = document.getElementById('rain');
+  const rc = rain.getContext('2d');
+  let drops = [];
+  function sizeRain(){
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    rain.width = innerWidth*dpr; rain.height = innerHeight*dpr;
+    rc.setTransform(dpr,0,0,dpr,0,0);
+    const n = Math.round(innerWidth*innerHeight/5000);
+    drops = Array.from({length:n}, () => newDrop(true));
+  }
+  function newDrop(anywhere){
+    const z = Math.random();
+    return { x: Math.random()*(innerWidth+200)-100, y: anywhere ? Math.random()*innerHeight : -40,
+             len: 8 + z*22, v: 7 + z*13, a: .08 + z*.22, w: z > .85 ? 1.4 : 1 };
+  }
+  function frame(){
+    rc.clearRect(0,0,innerWidth,innerHeight);
+    for (const d of drops){
+      rc.strokeStyle = `rgba(185,200,215,${d.a})`; rc.lineWidth = d.w;
+      rc.beginPath(); rc.moveTo(d.x, d.y); rc.lineTo(d.x - d.len*.18, d.y + d.len); rc.stroke();
+      d.y += d.v; d.x -= d.v*.18;
+      if (d.y > innerHeight) Object.assign(d, newDrop(false));
+    }
+    if (!reduce) requestAnimationFrame(frame);
+  }
+
+  function layout(){ drawCity(); sizeRain(); if (reduce) frame(); }
+  let t; addEventListener('resize', () => { clearTimeout(t); t = setTimeout(layout, 120); });
+  layout(); if (!reduce) requestAnimationFrame(frame);
+
+  /* ---------- clock ---------- */
+  const clock = document.getElementById('clock');
+  const pad = n => String(n).padStart(2,'0');
+  function tick(){
+    const d = new Date(), off = -d.getTimezoneOffset();
+    const tz = 'UTC' + (off>=0?'+':'-') + pad(Math.floor(Math.abs(off)/60)) + (Math.abs(off)%60 ? ':'+pad(Math.abs(off)%60) : '');
+    clock.textContent = `${d.getFullYear()}.${pad(d.getMonth()+1)}.${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())} ${tz}`;
+  }
+  tick(); setInterval(tick, 1000);
+
+  /* ---------- typed transmissions (edit these freely) ---------- */
+  const lines = [
+    'Connection monitored',
+    'Clause 13 in effect',
+    'Awaiting directive from sector 06',
+    'Route verified. No anomalies.',
+    'Node online // credentials unverified',
+    'Uplink stable // scanning initiated',
+  ];
+  const out = document.getElementById('type');
+  if (reduce){ out.textContent = lines[0]; }
+  else {
+    let i = 0, j = 0, del = false;
+    (function step(){
+      const s = lines[i];
+      if (!del){ out.textContent = s.slice(0, ++j);
+        if (j === s.length){ del = true; return setTimeout(step, 2600); }
+        return setTimeout(step, 45 + Math.random()*70);
+      }
+      out.textContent = s.slice(0, --j);
+      if (j === 0){ del = false; i = (i+1) % lines.length; return setTimeout(step, 450); }
+      setTimeout(step, 22);
+    })();
+  }
+
+  /* ---------- rare glitch on the title ---------- */
+  const title = document.getElementById('title');
+  if (!reduce){
+    (function g(){
+      setTimeout(() => {
+        title.classList.add('glitch');
+        setTimeout(() => title.classList.remove('glitch'), 90 + Math.random()*120);
+        if (Math.random() < .4) setTimeout(() => { title.classList.add('glitch'); setTimeout(() => title.classList.remove('glitch'), 60); }, 220);
+        g();
+      }, 4000 + Math.random()*7000);
+    })();
+  }
+})();
+</script>
+</body>
+</html>
